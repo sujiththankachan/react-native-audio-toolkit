@@ -149,6 +149,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
     // metering methods
     private void startMeteringTimer(int monitorInterval) {
         meteringUpdateTimer = new Timer();
+        final long systemTime = SystemClock.elapsedRealtime();
         meteringUpdateTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
@@ -157,6 +158,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
                     body.putDouble("id", meteringFrameId++);
 
                     int amplitude = meteringRecorder.getMaxAmplitude();
+                    long time = SystemClock.elapsedRealtime() - systemTime;
                     if (amplitude == 0) {
                         body.putInt("value", -160);
                         body.putInt("rawValue", 0);
@@ -164,6 +166,8 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
                         body.putInt("rawValue", amplitude);
                         body.putInt("value", (int) (20 * Math.log10(((double) amplitude) / 32767d)));
                     }
+                    body.putDouble("currentPosition", Long.valueOf(time).doubleValue());
+
                     emitEvent(meteringRecorderId, "meter", body);
                 }
             }
