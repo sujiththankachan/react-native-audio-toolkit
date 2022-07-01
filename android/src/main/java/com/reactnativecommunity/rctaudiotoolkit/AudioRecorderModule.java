@@ -2,6 +2,7 @@ package com.reactnativecommunity.rctaudiotoolkit;
 
 import android.annotation.TargetApi;
 import android.media.MediaRecorder;
+import android.os.SystemClock;
 import android.util.Log;
 import android.net.Uri;
 import android.webkit.URLUtil;
