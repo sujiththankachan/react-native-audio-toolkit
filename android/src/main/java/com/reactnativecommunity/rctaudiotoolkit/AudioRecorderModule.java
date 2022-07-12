@@ -174,12 +174,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
                     }
                 } catch (Exception e) {
                     // Exception happened
-                    WritableMap body = Arguments.createMap();
-                    body.putDouble("id", meteringFrameId++);
-                    body.putInt("value", -160);
-                    body.putInt("rawValue", 0);
-                    body.putDouble("currentPosition", Long.valueOf(time).doubleValue());
-                    emitEvent(meteringRecorderId, "meter", body);
+                    e.printStackTrace();
                 }
 
             }
