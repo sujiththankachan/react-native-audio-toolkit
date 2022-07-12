@@ -154,23 +154,34 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         meteringUpdateTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                if (meteringRecorderId != null && meteringRecorder != null) {
+                long time = SystemClock.elapsedRealtime() - systemTime;
+                try{
+                    if (meteringRecorderId != null && meteringRecorder != null) {
+                        WritableMap body = Arguments.createMap();
+                        body.putDouble("id", meteringFrameId++);
+
+                        int amplitude = meteringRecorder.getMaxAmplitude();
+                        if (amplitude == 0) {
+                            body.putInt("value", -160);
+                            body.putInt("rawValue", 0);
+                        } else {
+                            body.putInt("rawValue", amplitude);
+                            body.putInt("value", (int) (20 * Math.log10(((double) amplitude) / 32767d)));
+                        }
+                        body.putDouble("currentPosition", Long.valueOf(time).doubleValue());
+
+                        emitEvent(meteringRecorderId, "meter", body);
+                    }
+                } catch (Exception e) {
+                    // Exception happened
                     WritableMap body = Arguments.createMap();
                     body.putDouble("id", meteringFrameId++);
-
-                    int amplitude = meteringRecorder.getMaxAmplitude();
-                    long time = SystemClock.elapsedRealtime() - systemTime;
-                    if (amplitude == 0) {
-                        body.putInt("value", -160);
-                        body.putInt("rawValue", 0);
-                    } else {
-                        body.putInt("rawValue", amplitude);
-                        body.putInt("value", (int) (20 * Math.log10(((double) amplitude) / 32767d)));
-                    }
+                    body.putInt("value", -160);
+                    body.putInt("rawValue", 0);
                     body.putDouble("currentPosition", Long.valueOf(time).doubleValue());
-
                     emitEvent(meteringRecorderId, "meter", body);
                 }
+
             }
         }, 0, monitorInterval);
     }
@@ -192,11 +203,8 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
             recorder.release();
             this.recorderPool.remove(recorderId);
             this.recorderAutoDestroy.remove(recorderId);
-            if (recorderId == meteringRecorderId) {
-                meteringRecorderId = null;
-                meteringRecorder = null;
-            }
-
+            meteringRecorderId = null;
+            meteringRecorder = null;
             WritableMap data = new WritableNativeMap();
             data.putString("message", "Destroyed recorder");
 
@@ -215,7 +223,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
     @ReactMethod
     public void prepare(Integer recorderId, String path, ReadableMap options, Callback callback) {
         if (path == null || path.isEmpty()) {
-            callback.invoke(errObj("invalidpath", "Provided path was empty"));
+            callback.invoke(errObj("invalidpathstop", "Provided path was empty"));
             return;
         }
 
