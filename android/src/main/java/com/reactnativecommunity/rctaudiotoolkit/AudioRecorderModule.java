@@ -150,11 +150,15 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
     // metering methods
     private void startMeteringTimer(int monitorInterval) {
         meteringUpdateTimer = new Timer();
-        final long systemTime = SystemClock.elapsedRealtime();
+        // Updated to SystemClock.uptimeMillis from SystemClock.elapsedRealtime
+        // Added by Sujith Thankachan on 20/07/2022
+        final long systemTime = SystemClock.uptimeMillis();
         meteringUpdateTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                long time = SystemClock.elapsedRealtime() - systemTime;
+                // Updated to SystemClock.uptimeMillis from SystemClock.elapsedRealtime
+                // Added by Sujith Thankachan on 20/07/2022
+                long time = SystemClock.uptimeMillis() - systemTime;
                 try{
                     if (meteringRecorderId != null && meteringRecorder != null) {
                         WritableMap body = Arguments.createMap();
@@ -315,9 +319,9 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         }
 
         try {
-            if (recorderId == meteringRecorderId) {
-                startMeteringTimer(meteringInterval);
-            }
+            // Removed comparison for recorderId and meteringRecorderId
+            // Added by Sujith Thankachan on 20/07/2022
+            startMeteringTimer(meteringInterval);
             recorder.start();
 
             callback.invoke();
@@ -335,9 +339,9 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         }
 
         try {
-            if (recorderId == meteringRecorderId) {
-                stopMeteringTimer();
-            }
+            // Removed comparison for recorderId and meteringRecorderId
+            // Added by Sujith Thankachan on 20/07/2022
+            stopMeteringTimer();
             recorder.stop();
             if (this.recorderAutoDestroy.get(recorderId)) {
                 Log.d(LOG_TAG, "Autodestroying recorder...");
@@ -367,9 +371,9 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         }
 
         try {
-            if (recorderId == meteringRecorderId) {
-                stopMeteringTimer();
-            }
+            // Removed comparison for recorderId and meteringRecorderId
+            // Added by Sujith Thankachan on 20/07/2022
+            stopMeteringTimer();
             recorder.pause();
             if (this.recorderAutoDestroy.get(recorderId)) {
                 Log.d(LOG_TAG, "Autodestroying recorder...");
