@@ -146,19 +146,20 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
 
         return uri;
     }
-    
+    private long lapsedTime = 0;
+    private int monitorCounter = 0;
     // metering methods
-    private void startMeteringTimer(int monitorInterval) {
+    private void startMeteringTimer(final int monitorInterval) {
         meteringUpdateTimer = new Timer();
         // Updated to SystemClock.uptimeMillis from SystemClock.elapsedRealtime
         // Added by Sujith Thankachan on 20/07/2022
         final long systemTime = SystemClock.uptimeMillis();
+
         meteringUpdateTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 // Updated to SystemClock.uptimeMillis from SystemClock.elapsedRealtime
                 // Added by Sujith Thankachan on 20/07/2022
-                long time = SystemClock.uptimeMillis() - systemTime;
                 try{
                     if (meteringRecorderId != null && meteringRecorder != null) {
                         WritableMap body = Arguments.createMap();
@@ -172,7 +173,18 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
                             body.putInt("rawValue", amplitude);
                             body.putInt("value", (int) (20 * Math.log10(((double) amplitude) / 32767d)));
                         }
-                        body.putDouble("currentPosition", Long.valueOf(time).doubleValue());
+                        // Counter based time update since we have monitor interval which
+                        // will call repeatedly in a 1 second.
+                        // Added by Sujith Thankachan on 22/07/2022
+                        monitorCounter++;
+                        if(monitorCounter == (int)(1000/monitorInterval)) {
+                            lapsedTime = SystemClock.uptimeMillis() - systemTime;
+                            body.putDouble("currentPosition", Long.valueOf(lapsedTime).doubleValue());
+                            monitorCounter = 0;
+                        } else {
+                            body.putDouble("currentPosition", Long.valueOf(lapsedTime).doubleValue());
+                        }
+
 
                         emitEvent(meteringRecorderId, "meter", body);
                     }
