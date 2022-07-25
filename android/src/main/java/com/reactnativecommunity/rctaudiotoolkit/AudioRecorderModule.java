@@ -202,6 +202,9 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
             meteringUpdateTimer.cancel();
             meteringUpdateTimer.purge();
             meteringUpdateTimer = null;
+            // resetting lapsedTime on stopping metering timer
+            // Added by Sujith Thankachan on 25/07/2022
+            lapsedTime = 0;
             meteringFrameId = 0;
         }
     }
@@ -331,10 +334,13 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         }
 
         try {
+            
+            recorder.start();
             // Removed comparison for recorderId and meteringRecorderId
             // Added by Sujith Thankachan on 20/07/2022
+            // Updated on 25/07/2022
+            // Update: invoking of startMeteringTimer after calling recorder.start()
             startMeteringTimer(meteringInterval);
-            recorder.start();
 
             callback.invoke();
         } catch (Exception e) {
