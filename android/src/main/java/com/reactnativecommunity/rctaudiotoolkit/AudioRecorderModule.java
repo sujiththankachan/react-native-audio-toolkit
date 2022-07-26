@@ -21,6 +21,7 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 import java.io.IOException;
 import java.io.File;
 import java.lang.Thread;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -151,9 +152,9 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
     // metering methods
     private void startMeteringTimer(final int monitorInterval) {
         meteringUpdateTimer = new Timer();
-        // Updated back to SystemClock.elapsedRealtime from SystemClock.uptimeMillis
+        // Updated to new Date().getTime() from SystemClock.elapsedRealtime
         // Added by Sujith Thankachan on 26/07/2022
-        final long systemTime = SystemClock.elapsedRealtime();
+        final long startTime = new Date().getTime();
 
         meteringUpdateTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -176,9 +177,9 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
                         // Added by Sujith Thankachan on 22/07/2022
                         monitorCounter++;
                         if(monitorCounter == (int)(1000/monitorInterval)) {
-                            // Updated to SystemClock.elapsedRealtime from SystemClock.uptimeMillis
+                            // Updated to new Date().getTime() from SystemClock.elapsedRealtime
                             // Added by Sujith Thankachan on 26/07/2022
-                            lapsedTime = SystemClock.elapsedRealtime() - systemTime;
+                            lapsedTime = new Date().getTime() - startTime;
                             body.putDouble("currentPosition", Long.valueOf(lapsedTime).doubleValue());
                             monitorCounter = 0;
                         } else {
@@ -205,6 +206,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
             // resetting lapsedTime on stopping metering timer
             // Added by Sujith Thankachan on 25/07/2022
             lapsedTime = 0;
+            monitorCounter = 0;
             meteringFrameId = 0;
         }
     }
