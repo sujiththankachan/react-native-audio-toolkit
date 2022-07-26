@@ -151,15 +151,13 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
     // metering methods
     private void startMeteringTimer(final int monitorInterval) {
         meteringUpdateTimer = new Timer();
-        // Updated to SystemClock.uptimeMillis from SystemClock.elapsedRealtime
-        // Added by Sujith Thankachan on 20/07/2022
-        final long systemTime = SystemClock.uptimeMillis();
+        // Updated back to SystemClock.elapsedRealtime from SystemClock.uptimeMillis
+        // Added by Sujith Thankachan on 26/07/2022
+        final long systemTime = SystemClock.elapsedRealtime();
 
         meteringUpdateTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                // Updated to SystemClock.uptimeMillis from SystemClock.elapsedRealtime
-                // Added by Sujith Thankachan on 20/07/2022
                 try{
                     if (meteringRecorderId != null && meteringRecorder != null) {
                         WritableMap body = Arguments.createMap();
@@ -178,7 +176,9 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
                         // Added by Sujith Thankachan on 22/07/2022
                         monitorCounter++;
                         if(monitorCounter == (int)(1000/monitorInterval)) {
-                            lapsedTime = SystemClock.uptimeMillis() - systemTime;
+                            // Updated to SystemClock.elapsedRealtime from SystemClock.uptimeMillis
+                            // Added by Sujith Thankachan on 26/07/2022
+                            lapsedTime = SystemClock.elapsedRealtime() - systemTime;
                             body.putDouble("currentPosition", Long.valueOf(lapsedTime).doubleValue());
                             monitorCounter = 0;
                         } else {
