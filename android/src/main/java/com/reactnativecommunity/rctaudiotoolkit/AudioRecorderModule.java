@@ -43,6 +43,13 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
     private MediaRecorder meteringRecorder = null;
     private int meteringInterval = 0;
 
+    // Variables for handling metering of sound recording and its lapsed time
+    // Added by Sujith Thankachan
+    // Added On 27/07/2022
+    private long lapsedTime = 0;
+    private int monitorCounter = 0;
+    private long meteringStartTime = new Date().getTime();
+
     public AudioRecorderModule(ReactApplicationContext reactContext) {
         super(reactContext);
         this.context = reactContext;
@@ -147,14 +154,13 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
 
         return uri;
     }
-    private long lapsedTime = 0;
-    private int monitorCounter = 0;
+
     // metering methods
     private void startMeteringTimer(final int monitorInterval) {
         meteringUpdateTimer = new Timer();
         // Updated to new Date().getTime() from SystemClock.elapsedRealtime
         // Added by Sujith Thankachan on 26/07/2022
-        final long startTime = new Date().getTime();
+        meteringStartTime = new Date().getTime();
 
         meteringUpdateTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -179,7 +185,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
                         if(monitorCounter == (int)(1000/monitorInterval)) {
                             // Updated to new Date().getTime() from SystemClock.elapsedRealtime
                             // Added by Sujith Thankachan on 26/07/2022
-                            lapsedTime = new Date().getTime() - startTime;
+                            lapsedTime = new Date().getTime() - meteringStartTime;
                             body.putDouble("currentPosition", Long.valueOf(lapsedTime).doubleValue());
                             monitorCounter = 0;
                         } else {
@@ -207,6 +213,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
             // Added by Sujith Thankachan on 25/07/2022
             lapsedTime = 0;
             monitorCounter = 0;
+            meteringStartTime = new Date().getTime();
             meteringFrameId = 0;
         }
     }
